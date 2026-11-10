@@ -1,0 +1,32 @@
+# Application URL
+APP_URL=http://localhost/3dedge-admin/
+BASE_URL=/3dedge-admin/
+
+# Database
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=3d_edge
+DB_USER=root
+DB_PASS=Siyab0ng@
+
+# SMTP - Gmail Configuration
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=mbokodosiyabonga1@gmail.com
+SMTP_PASSWORD=qpvn zwrv sexv jubq
+SMTP_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=mbokodosiyabonga1@gmail.com
+MAIL_FROM_NAME=3D Edge
+
+# Bob Go - live parcel status on the admin Orders page
+# BOBGO_ENV is only a label shown in the Live status window: sandbox or production.
+BOBGO_ENV=sandbox
+# The tracking address from Bob Go's API documentation. Put {reference} where the
+# tracking number goes, exactly like this (no spaces, no quotes). Example shape only:
+# https://api.sandbox.bobgo.co.za/tracking/{reference}
+BOBGO_TRACKING_URL=PASTE_THE_TRACKING_URL_FROM_BOB_GO_HERE
+# Your Bob Go API key (sandbox key while testing, production key when you go live).
+BOBGO_API_KEY=PASTE_YOUR_BOB_GO_API_KEY_HERE
+# How the key is sent. Leave this as is unless Bob Go says to use another header,
+# e.g. X-API-Key: {key}
+BOBGO_AUTH_HEADER=Authorization: Bearer {key}

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checkout | 3D Edge</title>
+<style>
+  :root {
+    --ink: #111;
+    --muted: #6b6b6b;
+    --line: #e4e4e4;
+    --soft: #f6f6f6;
+    --accent: #111;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #f2f2f2;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--ink);
+    font-size: 14px;
+  }
+  .page {
+    max-width: 1080px;
+    margin: 28px auto;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  /* Top bar */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 14px 28px; border-bottom: 1px solid var(--line);
+  }
+  .brand { font-weight: 800; font-size: 18px; letter-spacing: -0.3px; }
+  .topbar .icons { display: flex; gap: 14px; color: var(--muted); font-size: 16px; }
+  .search {
+    flex: 0 1 260px; display: flex; align-items: center; gap: 8px;
+    border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; color: var(--muted);
+  }
+  .search input { border: 0; outline: 0; width: 100%; font: inherit; background: transparent; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 0;
+  }
+  .main { padding: 28px 32px 36px; }
+  .side { padding: 28px 28px 32px; background: var(--soft); border-left: 1px solid var(--line); }
+
+  .crumbs { font-size: 12px; color: var(--muted); margin-bottom: 18px; }
+  .crumbs b { color: var(--ink); font-weight: 600; }
+
+  h2 { font-size: 16px; font-weight: 700; margin: 0 0 14px; }
+  .section { margin-bottom: 26px; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field.full { grid-column: 1 / -1; }
+  label { font-size: 12px; color: var(--muted); }
+  input, textarea, select {
+    font: inherit; font-size: 13px; color: var(--ink);
+    border: 1px solid var(--line); border-radius: 8px;
+    padding: 9px 11px; background: #fff; outline: 0; width: 100%;
+  }
+  input:focus, textarea:focus, select:focus { border-color: #9a9a9a; }
+  input::placeholder, textarea::placeholder { color: #b4b4b4; }
+  textarea { min-height: 84px; resize: vertical; }
+  .phone { display: flex; gap: 6px; }
+  .phone select { width: 84px; flex-shrink: 0; }
+
+  /* Shipping method cards */
+  .methods { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .method {
+    position: relative; display: flex; flex-direction: column; gap: 4px;
+    border: 1px solid var(--line); border-radius: 10px; padding: 14px 14px 13px;
+    cursor: pointer; background: #fff;
+  }
+  .method input { position: absolute; opacity: 0; pointer-events: none; }
+  .method .row { display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 13px; }
+  .method .dot {
+    width: 14px; height: 14px; border-radius: 50%; border: 1px solid #bdbdbd;
+    display: inline-block; margin-right: 8px; flex-shrink: 0;
+  }
+  .method .name { display: flex; align-items: center; }
+  .method small { color: var(--muted); font-size: 12px; padding-left: 22px; }
+  .method.selected { border-color: #9a9a9a; background: var(--soft); }
+  .method.selected .dot { border: 4px solid var(--ink); }
+
+  /* Cart summary */
+  .side h2 { margin-bottom: 16px; }
+  .item { display: grid; grid-template-columns: 52px 1fr auto; gap: 12px; align-items: center; margin-bottom: 16px; }
+  .thumb {
+    width: 52px; height: 52px; border-radius: 8px; background: #d9d9d9;
+    overflow: hidden; display: flex; align-items: center; justify-content: center; color: #888; font-size: 11px;
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .item .name { font-weight: 600; font-size: 13px; }
+  .item .meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .item .price { font-weight: 600; font-size: 13px; }
+
+  .promo { display: flex; gap: 8px; margin: 18px 0 20px; }
+  .promo input { flex: 1; }
+  .promo button {
+    border: 1px solid var(--line); background: #fff; border-radius: 8px;
+    padding: 0 16px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+
+  .totals { border-top: 1px solid var(--line); padding-top: 14px; }
+  .trow { display: flex; justify-content: space-between; color: var(--muted); font-size: 13px; margin-bottom: 9px; }
+  .trow.total { color: var(--ink); font-weight: 700; font-size: 15px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .trow .info { display: inline-block; width: 13px; height: 13px; border-radius: 50%; border: 1px solid #bdbdbd; text-align: center; font-size: 9px; line-height: 11px; color: #999; margin-left: 4px; }
+
+  .continue {
+    display: block; width: 100%; margin-top: 20px; border: 0; border-radius: 10px;
+    background: var(--accent); color: #fff; font: inherit; font-weight: 700; font-size: 14px;
+    padding: 14px; cursor: pointer;
+  }
+  .continue:hover { opacity: .92; }
+
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    .side { border-left: 0; border-top: 1px solid var(--line); }
+    .search { display: none; }
+  }
+  @media (max-width: 560px) {
+    .page { margin: 0; border-radius: 0; border-left: 0; border-right: 0; }
+    .main, .side { padding: 22px 16px; }
+    .grid2, .methods { grid-template-columns: 1fr; }
+    .topbar { padding: 12px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="topbar">
+    <div class="brand">3D EDGE</div>
+    <div class="search" aria-hidden="true">
+      <span>&#128269;</span><input type="text" placeholder="Search" disabled>
+    </div>
+    <div class="icons" aria-hidden="true"><span>&#9825;</span><span>&#9633;</span><span>&#9787;</span></div>
+  </header>
+
+  <div class="layout">
+
+    <!-- ============ LEFT: shipping details ============ -->
+    <section class="main">
+      <div class="crumbs">Cart &nbsp;&gt;&nbsp; <b>Shipping</b> &nbsp;&gt;&nbsp; Payment</div>
+
+      <form id="checkout-form" action="#" method="post" onsubmit="return false;">
+
+        <div class="section">
+          <h2>Shipping Address</h2>
+          <div class="grid2">
+            <div class="field">
+              <label for="first">First Name *</label>
+              <input id="first" name="first_name" placeholder="Enter first name" required>
+            </div>
+            <div class="field">
+              <label for="last">Last Name *</label>
+              <input id="last" name="last_name" placeholder="Enter last name" required>
+            </div>
+            <div class="field">
+              <label for="email">Email *</label>
+              <input id="email" type="email" name="email" placeholder="you@example.com" required>
+            </div>
+            <div class="field">
+              <label for="phone">Phone Number *</label>
+              <div class="phone">
+                <select aria-label="Country code"><option>+27</option><option>+1</option><option>+44</option></select>
+                <input id="phone" type="tel" name="phone" placeholder="Phone number" required>
+              </div>
+            </div>
+            <div class="field">
+              <label for="city">City *</label>
+              <input id="city" name="city" placeholder="Johannesburg" required>
+            </div>
+            <div class="field">
+              <label for="state">State / Province *</label>
+              <input id="state" name="state" placeholder="Gauteng" required>
+            </div>
+            <div class="field">
+              <label for="zip">Postal Code *</label>
+              <input id="zip" name="postal_code" placeholder="2196" inputmode="numeric" required>
+            </div>
+            <div class="field full">
+              <label for="note">Delivery notes (optional)</label>
+              <textarea id="note" name="note" placeholder="Enter a description or delivery instructions"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>Shipping Method</h2>
+          <div class="methods" role="radiogroup" aria-label="Shipping method">
+            <label class="method selected" data-price="0">
+              <input type="radio" name="shipping" value="free" checked>
+              <div class="row"><span class="name"><span class="dot"></span>Free Shipping</span><span>R0</span></div>
+              <small>5-7 days</small>
+            </label>
+            <label class="method" data-price="95">
+              <input type="radio" name="shipping" value="express">
+              <div class="row"><span class="name"><span class="dot"></span>Express Shipping</span><span>R95</span></div>
+              <small>1-2 days</small>
+            </label>
+          </div>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- ============ RIGHT: cart summary ============ -->
+    <aside class="side">
+      <h2>Your Cart</h2>
+
+      <!-- Sample items. Replace these rows with your cart data. -->
+      <div class="item">
+        <div class="thumb"><span>Img</span></div>
+        <div>
+          <div class="name">Item name</div>
+          <div class="meta">Size: M</div>
+        </div>
+        <div class="price" data-item-price="450">R450.00</div>
+      </div>
+      <div class="item">
+        <div class="thumb"><span>Img</span></div>
+        <div>
+          <div class="name">Second item</div>
+          <div class="meta">Colour: Black</div>
+        </div>
+        <div class="price" data-item-price="250">R250.00</div>
+      </div>
+
+      <div class="promo">
+        <input type="text" placeholder="Discount code" aria-label="Discount code">
+        <button type="button">Apply</button>
+      </div>
+
+      <div class="totals">
+        <div class="trow"><span>Subtotal</span><span id="subtotal">R700.00</span></div>
+        <div class="trow"><span>Shipping</span><span id="shipping">R0.00</span></div>
+        <div class="trow"><span>Estimated taxes <span class="info">i</span></span><span id="taxes">R0.00</span></div>
+        <div class="trow total"><span>Total</span><span id="total">R700.00</span></div>
+      </div>
+
+      <button class="continue" type="submit" form="checkout-form">Continue to Payment</button>
+    </aside>
+
+  </div>
+</div>
+
+<script>
+  // Shipping method: highlight the chosen card and update the totals.
+  (function () {
+    const cards = document.querySelectorAll('.method');
+    const fmt = n => 'R' + n.toFixed(2);
+    const itemsTotal = Array.from(document.querySelectorAll('[data-item-price]'))
+      .reduce((sum, el) => sum + Number(el.dataset.itemPrice), 0);
+    const taxRate = 0; // set your tax rate here if you charge tax
+
+    function refresh() {
+      const chosen = document.querySelector('.method input:checked').closest('.method');
+      cards.forEach(c => c.classList.toggle('selected', c === chosen));
+      const shipping = Number(chosen.dataset.price);
+      const taxes = (itemsTotal + shipping) * taxRate;
+      document.getElementById('subtotal').textContent = fmt(itemsTotal);
+      document.getElementById('shipping').textContent = shipping ? fmt(shipping) : 'R0.00';
+      document.getElementById('taxes').textContent = fmt(taxes);
+      document.getElementById('total').textContent = fmt(itemsTotal + shipping + taxes);
+    }
+    document.querySelectorAll('.method input').forEach(r => r.addEventListener('change', refresh));
+    refresh();
+  })();
+</script>
+</body>
+</html>

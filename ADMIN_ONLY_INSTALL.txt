@@ -1,0 +1,106 @@
+3D EDGE ADMIN PANEL: INSTALLATION NOTES
+
+1. Back up your database and your existing admin folder first.
+
+2. Run the database update ONCE:
+   Open phpMyAdmin, select the database used by Start_session.php (3d_edge),
+   open the SQL tab, paste the contents of ADMIN_DATABASE_UPDATE.sql and run it.
+   It is safe to run again. It adds: review.status, news.image, soft-delete columns,
+   and the news_trash and gallery_img_trash tables. It also makes sure the ID columns
+   of product, material, product_img, material_img, news, gallery_img and admin
+   auto-number (fixes "Field 'gallery_id' doesn't have a default value").
+   It also adds the columns your database is missing and the website already reads:
+   material (description, density, price_per_kg, status, created_at, updated_at),
+   material_img (img_url, cover_img), product (material_id, model_url), and the
+   quote and order statuses the admin uses (accepted, in production, completed,
+   declined, delivered, cancelled).
+
+3. Replace your admin folder with this one. Do not copy it over the top of the root
+   files: the admin folder is the only thing that changes.
+   Delete any old admin/logout.php (the root logout.php is used instead).
+
+4. Make sure PHP can write to admin/uploads/ (products, materials, news, gallery).
+   On XAMPP this is normally already the case.
+
+5. Log in with an administrator account. Changing a role on the Users & admins page
+   saves straight away. A demoted administrator is signed out of the admin area at once.
+
+WHAT CHANGED IN THIS VERSION
+- Quote requests: four tabs. Pending = pending and reviewed. Approved = accepted and
+  in production. Declined = declined. Shipped = completed. Each row shows the request
+  number, description, username, a details pop-out, and columns to update the status,
+  estimate, final price and shipping date.
+- Products: add and edit happen in pop-outs. Upload images and choose which one is the
+  cover, or change the cover later with "Make cover". Upload a .glb 3D model (max 50 MB).
+- Materials: add and edit in pop-outs, with the same cover choice.
+- News and gallery: edit in a pop-out (text, and replace the image).
+- Users & admins: Customers and Administrators tabs. Customers have no category.
+  The top admin category is shown as "Super".
+
+ACCESS BY CATEGORY
+Every administrator can SEE every page. The category decides which pages they can CHANGE.
+- Super: everything.
+- News: news and gallery.
+- Orders: products, materials, orders and quote requests.
+- Quotes: quote requests only.
+Pages outside the category show a "View only" notice and their controls are disabled.
+The server also refuses those saves, so the rule cannot be bypassed.
+Dashboard and My profile never change anything. Deleted items restores are checked per section.
+Customers have no category. Only Super can change roles and categories (Users & admins).
+
+REVIEWS
+Pending and approved reviews are listed. Declining a review removes it from display and
+moves it to Deleted items, where it can be restored (restoring sets it back to pending).
+
+FAQ
+The FAQ page (News category or Super can change it) writes questions and answers to the
+faq table. Hide a question to take it off the website; delete moves it to Deleted items.
+The five starter questions come from the Help page. The public Help page still shows its
+own built-in list until it is connected to the faq table (ask for this to be wired in).
+The old Messages page has been removed. Its contact_message table, if it exists, is left
+untouched so no data is lost.
+
+NAVBAR
+Search (Ctrl + K focuses it; Enter opens the first matching page), light/dark mode
+(remembered on this device), a notification bell showing how many items are waiting
+(quote requests and reviews waiting for you), and the account menu.
+Replace assets/images/admin-avatar.svg with a headshot (keep the same file name, or
+change the path in _layout.php) to show a photo instead of the placeholder.
+
+LIVE PARCEL STATUS (BOB GO, PROOF OF CONCEPT)
+On the Orders page, each order with a tracking number has a "Live status" button. It checks
+Bob Go when opened and refreshes every 30 seconds while open.
+Add these to .env (the key stays on the server, never in the browser):
+  BOBGO_ENV=sandbox
+  BOBGO_TRACKING_URL=<sandbox tracking address, with {reference} where the number goes>
+  BOBGO_API_KEY=<your sandbox key>
+  BOBGO_AUTH_HEADER=Authorization: Bearer {key}     (only if Bob Go asks for a different header)
+The response field names are a guess. They are in bobgo_parse_status() in
+admin/bobgo_tracking.php. Adjust them there once Bob Go's sandbox documentation is available.
+Only admins can use it (admin/tracking.php). Customers are refused.
+
+HOW THE ADMIN CONNECTS TO THE WEBSITE
+- Products and materials: images are stored in product_img and material_img
+  (path relative to admin/uploads/). Only status = available and not deleted are shown.
+- News: the newest row in the news table is the home-page news item.
+- Gallery: rows in gallery_img appear on the Reviews & Gallery page.
+- Reviews: only status = approved and not deleted appear on product pages.
+- Deleting never erases a row. Products, materials and reviews are marked with deleted_at.
+  News and gallery items are moved to news_trash and gallery_img_trash.
+  Restore everything from Deleted items.
+
+KNOWN LIMITS
+- If publishing news shows "would not save this news item", the database has a CHECK
+  constraint on the news table. The update script removes it when it checks JSON. For
+  any other rule, run the query in ADMIN_DATABASE_UPDATE.sql to see its definition and
+  send it to the developer.
+- Order tracking numbers are digits only, because the order.tracking_num column is an
+  integer in this database. Letters are refused with a message.
+- Material colour is one of None, RED, ORANGE or YELLOW (the database enum).
+- index.php (home page) shows the latest 3 reviews without checking status.
+  Pending or rejected reviews can appear there. Add WHERE review.status = 'approved'
+  to that query on the customer side to fix it.
+- The permission category (News, Order, User, Quote) is saved but not yet enforced:
+  every administrator can open every admin page.
+
+Security: never commit database passwords. Move them to your .env file.
